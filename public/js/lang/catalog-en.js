@@ -164,6 +164,15 @@
       category: 'Party',
       tags: ['Family', 'Casual'],
     },
+    kitchencrew: {
+      name: 'Kitchen Crew',
+      subtitle: 'Chop, cook, plate, serve — together',
+      description: 'Real-time co-op for 1-4 cooks: prep, cook and serve orders before closing time to earn three stars.',
+      players: '1-4 Players',
+      duration: '~3 min',
+      category: 'Party',
+      tags: ['Co-op', 'Real-time', 'Chaotic'],
+    },
     snakebattle: {
       name: 'Snake Battle',
       subtitle: 'Survive the arena, don\'t crash',

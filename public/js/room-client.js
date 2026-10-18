@@ -34,7 +34,7 @@
   }
 
   // Games that can be started and played solo (no AI / opponent needed).
-  const SOLO_GAMES = ['2048', 'sudoku', 'minesweeper', 'numberbomb', 'twentyfour', 'suikabattle', 'drawguess'];
+  const SOLO_GAMES = ['2048', 'sudoku', 'minesweeper', 'numberbomb', 'twentyfour', 'suikabattle', 'drawguess', 'kitchencrew'];
 
   let roomOptions = {};
   let match = null; // best-of-N score for board games, from the server
@@ -738,6 +738,29 @@
               _t('ddz_total_rounds') + ': ' + roundsLabel +
             '</div>';
         }
+      } else if (game === 'kitchencrew') {
+        optionsEl.style.display = 'block';
+        var kcLevel = String(roomOptions.level || '1');
+        var kcMin = Number(roomOptions.minutes) || 3;
+        var kcSel = 'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:14px;';
+        if (isHost) {
+          var kcLevelOpts = ['1', '2', '3'].map(function(v) {
+            return '<option value="' + v + '"' + (kcLevel === v ? ' selected' : '') + '>' + _t('kc_level_' + v) + '</option>';
+          }).join('');
+          var kcMinOpts = [1, 2, 3, 4].map(function(v) {
+            return '<option value="' + v + '"' + (kcMin === v ? ' selected' : '') + '>' + _tf('kc_minutes_n', v) + '</option>';
+          }).join('');
+          optionsEl.innerHTML =
+            '<div style="font-size:13px;font-weight:600;margin-bottom:8px;">' + _t('game_settings') + '</div>' +
+            '<label style="display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:6px;">' + _t('kc_level') +
+              ' <select onchange="window._setGameOption(\'level\', this.value)" style="' + kcSel + '">' + kcLevelOpts + '</select></label>' +
+            '<label style="display:flex;align-items:center;gap:10px;font-size:14px;">' + _t('kc_minutes') +
+              ' <select onchange="window._setGameOption(\'minutes\', parseInt(this.value))" style="' + kcSel + '">' + kcMinOpts + '</select></label>';
+        } else {
+          optionsEl.innerHTML =
+            '<div style="font-size:13px;font-weight:600;margin-bottom:4px;">' + _t('game_settings') + '</div>' +
+            '<div style="font-size:13px;color:var(--text-muted)">' + _t('kc_level') + ': ' + _t('kc_level_' + kcLevel) + ' ・ ' + _t('kc_minutes') + ': ' + _tf('kc_minutes_n', kcMin) + '</div>';
+        }
       } else if (game === 'sheeptile') {
         optionsEl.style.display = 'block';
         var sameBoard = roomOptions.sameBoard !== false; // default same board
@@ -1123,13 +1146,21 @@
     if (_playerTooltipTimer) { clearTimeout(_playerTooltipTimer); _playerTooltipTimer = null; }
   }
 
+  var playerBarKey = null;
   function updatePlayerBar() {
     const bar = el.playerBar;
-    bar.innerHTML = '';
-    if (!players) return;
+    if (!players) { bar.innerHTML = ''; playerBarKey = null; return; }
+    // Realtime games call this on every state broadcast (up to ~15/s); rebuilding identical tags
+    // that often makes the bar flicker on phones, so only rebuild when what it shows changed.
+    const barKey = JSON.stringify(players.map(function(p) {
+      return [p.index, p.name, p.avatar, p.isBot, !!(state && state.currentPlayer === p.index)];
+    }));
+    const rebuild = barKey !== playerBarKey || !bar.firstChild;
+    playerBarKey = barKey;
+    if (rebuild) bar.innerHTML = '';
     // Ensure the tooltip div exists once
     ensurePlayerTooltip();
-    for (let i = 0; i < players.length; i++) {
+    for (let i = 0; rebuild && i < players.length; i++) {
       const p = players[i];
       const tag = document.createElement('div');
       tag.className = 'player-tag p' + p.index;
@@ -1142,13 +1173,13 @@
         showPlayerTooltip(p.name, tag);
       });
       bar.appendChild(tag);
-      if (i < players.length - 1) {
+      if (i < players.length - 1 && game !== 'kitchencrew') { // co-op: teammates, not opponents
         const vs = document.createElement('span');
         vs.className = 'vs-text'; vs.textContent = 'VS'; bar.appendChild(vs);
       }
     }
     // Overflowing bar (many players): bring whoever is acting into view
-    const act = bar.querySelector('.player-tag.active');
+    const act = rebuild && bar.querySelector('.player-tag.active');
     if (act && bar.scrollWidth > bar.clientWidth) {
       const br = bar.getBoundingClientRect(), ar = act.getBoundingClientRect();
       bar.scrollLeft += (ar.left + ar.width / 2) - (br.left + br.width / 2);
@@ -1164,7 +1195,7 @@
       else if (state && state.currentPlayer >= 0) st.textContent = _t('opponent_turn');
       else if (state) st.textContent = _t('realtime_race');
       // These renderers draw their own whose-turn header; the generic line would be wrong for them.
-      if (game === 'sanguo' || game === 'werewolf') st.style.display = 'none';
+      if (game === 'sanguo' || game === 'werewolf' || game === 'kitchencrew') st.style.display = 'none';
     }
   }
 
@@ -1349,6 +1380,11 @@
       isWin = winner === -2 ? wolfSide : !wolfSide;
       txt = isWin ? _t('you_win') : _t('you_lose');
       sub = _t(winner === -2 ? 'ww_win_wolf' : 'ww_win_good');
+    } else if (game === 'kitchencrew' && state) {
+      // Co-op: -2 = the shift earned at least one star, -3 = no stars
+      isWin = winner === -2;
+      txt = isWin ? '⭐'.repeat(state.stars) + ' ' + _tf('kc_team_win', state.stars) : _t('kc_team_fail');
+      sub = _tf('kc_result_sub', state.score, state.delivered, state.failed);
     } else {
       isWin = (winner === playerIndex);
       txt = isWin ? _t('you_win') : _t('you_lose'); sub = '';

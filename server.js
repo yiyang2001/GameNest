@@ -1451,6 +1451,10 @@ wss.on('connection', (ws) => {
         return;
       }
 
+      // Realtime games can mark high-frequency moves (e.g. position reports) as silent:
+      // the next tick broadcasts them, so they don't each trigger a full-state broadcast.
+      if (gameMod.realtime && typeof gameMod.silentMove === 'function' && gameMod.silentMove(data)) return;
+
       skipDisconnectedTurn(currentRoom);
 
       // Clear 24-point round timer when a round ends via player submission

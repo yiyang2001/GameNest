@@ -225,6 +225,21 @@
         { h: '提示', p: '尽量用 6 起飞增加场上飞机数，优先选择能击落对方或能飞跃的落点，终点前要算好点数，避免弹回。' },
       ]
     },
+    kitchencrew: {
+      sections: [
+        { h: '目标', p: '1～4 名厨师在同一个厨房里实时合作，在营业时间（默认 3 分钟）内尽量多地完成订单。得分达到三档门槛分别获得 1～3 星，至少 1 星算成功。人越多门槛越高。' },
+        { h: '操作', p: '电脑：WASD 或方向键移动，空格 / E 拿起或放下，F / Ctrl 切菜、洗盘，手里拿着食材时则是扔出去，Shift 冲刺。手机：左侧按住拖动当摇杆，右侧大按钮「拿/放」，蓝色按钮「切/洗」（拿着食材时变成「扔」），紫色按钮冲刺。手柄：左摇杆 / 十字键移动，A 拿/放，X 切/洗/扔，B 冲刺，Start 暂停（页面需用 https 或 localhost 打开）。高亮的格子就是将要操作的位置：站在台面正前方那一格时，无论面向哪边都操作这张台面；否则操作你面对的格子。' },
+        { h: '备菜', p: '空手对着食材箱拿起生食材。番茄、洋葱、蘑菇、生菜要放到砧板上，按「切」切好（站着别走开，离开会暂停但保留进度，两个人一起切更快）。面包不用切，可以端着盘子直接对着面包箱把面包放到盘子上。' },
+        { h: '扔食材', p: '手里拿着食材（生的或切好的都行）时按「切/洗/扔」，食材会朝你面对的方向飞出去，最远约 5 格。路上空手的队友会接住；撞到台面、砧板、锅、盘子或垃圾桶时，能放就落在上面（切好的菜可以直接扔进锅里）；放不下或飞到尽头就掉在地上，走过去就能捡起来。盘子和锅不能扔。' },
+        { h: '煮汤', p: '同一种切好的蔬菜放 3 份进锅里，锅在灶台上就会开始煮。进度条走满出现 ✓ 就能装盘；继续放着会冒红色感叹号，最后烧焦。烧焦的汤只能把锅端去垃圾桶倒掉。把锅从灶台端起来会暂停烹煮。' },
+        { h: '煎肉', p: '汉堡店里把生肉放进平底锅煎成肉饼，同样要注意别煎糊。肉饼、面包、切好的生菜都可以放到同一个盘子上组成汉堡。' },
+        { h: '装盘与上菜', p: '从盘架拿干净盘子，对着煮好的锅即可盛汤；盘子放在台面上时，也可以把食材直接放上去拼装。端着完成的菜交到红白遮阳棚的出餐口。只接受订单里有的菜，会优先完成最急的那一单。' },
+        { h: '订单与小费', p: '屏幕上方是订单，进度条是剩余时间。越早上菜小费越多；按顺序完成最左边（最早）的订单会累积连击，小费最多乘 4。订单超时会扣 10 分并打断连击。' },
+        { h: '盘子', p: '盘子数量有限，上菜后过几秒才回来。汉堡店里回来的是脏盘子：从回收口（↺）拿起，放进水槽按「切/洗」洗干净后会回到盘架。' },
+        { h: '厨房', p: '① 番茄汤开张：开阔厨房，只做汤，适合熟悉流程。② 隔墙沙拉吧：一排台面把备菜区和灶台隔开，隔着台面传递食材最快，一个人也可以从下方绕过去。③ 汉堡快餐店：煎肉、拼汉堡、洗盘子，分工最重要。' },
+        { h: '提示', p: '先分工：一人备菜、一人看锅装盘上菜。别让锅一直开着火空等，也别把盘子都堆在台面上。可以添加电脑厨师帮忙，电脑会自己挑活干。' },
+      ]
+    },
     snakebattle: {
       sections: [
         { h: '目标', p: '2～6 人在 28×20 的场地里同时操控贪吃蛇，活到最后的人获胜。蛇开局长 3 格，从不同的出生点出发。' },
@@ -627,6 +642,21 @@
         { h: 'Rolling', p: 'Rolling a 6 gives another roll. Three 6s in a row forfeit the turn. If all your planes are in base or home, after 5 rolls in a row without a 6 the next roll is guaranteed to be a 6.' },
         { h: 'No legal move', p: 'If no plane can move, the turn is skipped automatically, though a 6 still grants another roll. Plane colours are assigned randomly and are only cosmetic.' },
         { h: 'Tips', p: 'Use 6s to launch more planes. Prefer landings that capture or trigger a fly or jump. Count your steps near home to avoid bouncing back.' },
+      ]
+    },
+    kitchencrew: {
+      sections: [
+        { h: 'Goal', p: '1 to 4 chefs share one kitchen in real time and serve as many orders as possible before closing (3 minutes by default). Three score thresholds give 1 to 3 stars; at least one star counts as a win. Thresholds rise with more chefs.' },
+        { h: 'Controls', p: 'Desktop: WASD or arrow keys to move, Space / E to grab or drop, F / Ctrl to chop or wash, or to throw the ingredient you are holding, Shift to dash. Phone: hold and drag on the left as a joystick; the big right button grabs/drops, the blue one chops/washes (it becomes Throw while you hold an ingredient), the purple one dashes. Controller: left stick / D-pad to move, A grab/drop, X chop/wash/throw, B dash, Start pause (the page must be opened over https or localhost). The highlighted tile is what you will interact with: a counter beside the square you stand on always comes first, whichever way you face; otherwise it is the tile you are facing.' },
+        { h: 'Prep', p: 'Grab raw ingredients from crates with empty hands. Tomatoes, onions, mushrooms and lettuce must be chopped on a cutting board: place them and press Chop, then stay put (walking away pauses but keeps progress, and two chefs chop faster). Buns need no chopping; holding a plate at the bun crate drops a bun straight on it.' },
+        { h: 'Throwing', p: 'While holding an ingredient (raw or chopped), press Chop/Throw and it flies the way you face, up to about 5 tiles. An empty-handed teammate in its path catches it. If it hits a counter, board, pot, plate or bin that can take it, it lands there (you can throw chopped vegetables straight into a pot). Otherwise, or at the end of its flight, it drops on the floor, where anyone can pick it up. Plates and pots cannot be thrown.' },
+        { h: 'Soup', p: 'Put 3 chopped portions of the same vegetable in a pot; it cooks while on a stove. When the bar fills and a check mark appears it is ready to plate. Leave it and a red warning flashes, then it burns. Burnt soup must be tipped into the bin. Lifting a pot off the stove pauses cooking.' },
+        { h: 'Frying', p: 'In the Burger Bar, raw meat fries into a patty in a pan; do not let it burn. Patty, bun and chopped lettuce can all go on one plate to build a burger.' },
+        { h: 'Plating and serving', p: 'Take a clean plate from the rack and use it on a finished pot to scoop the soup. A plate sitting on a counter can also have ingredients added to it. Deliver finished dishes at the serving window with the striped awning. Only dishes that were ordered are accepted, and the most urgent matching order is fulfilled first.' },
+        { h: 'Orders and tips', p: 'Orders are shown at the top with a timer bar. Faster service earns a bigger tip, and serving the leftmost (oldest) order builds a streak that multiplies tips up to x4. A missed order costs 10 points and breaks the streak.' },
+        { h: 'Plates', p: 'Plates are limited and come back a few seconds after serving. In the Burger Bar they come back dirty: pick them up at the return hatch (↺), put them in the sink and wash them; clean plates go back to the rack.' },
+        { h: 'Kitchens', p: '1. Soup Starter: an open kitchen with soups only, to learn the flow. 2. Divided Diner: a counter wall splits prep from the stoves, so passing food over it is fastest; a solo chef can walk around through the gap at the bottom. 3. Burger Bar: frying, burger building and dish washing, where splitting the jobs matters most.' },
+        { h: 'Tips', p: 'Split the work: one chef preps, another watches the pots and serves. Do not leave a full pot unattended, and do not hoard plates on counters. Bot chefs can fill empty seats and pick jobs on their own.' },
       ]
     },
     snakebattle: {
