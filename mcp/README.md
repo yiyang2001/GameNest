@@ -69,7 +69,7 @@ loop `wait_for_turn` -> `get_rules`/`suggest_move` -> `make_move` -> until `game
 
 - **One process = one seat**: one MCP process (HTTP mode included) can sit in only one seat in one room at a time. To put several AIs in the same game, start several MCP processes.
 - **No authentication in HTTP mode**, only an `Origin` check. Don't expose it to the Internet.
-- **Realtime games don't work well**: in Suika Battle (suikabattle) drops and merges come from the browser's physics engine, so an AI effectively can't play; Snake Battle (snakebattle) advances frame by frame on the server, which polling tool calls can hardly keep up with.
+- **Realtime games don't work well**: in Suika Battle (suikabattle) drops and merges come from the browser's physics engine, so an AI effectively can't play; Snake Battle (snakebattle) and Kitchen Crew (kitchencrew) advance frame by frame on the server, which polling tool calls can hardly keep up with.
 - **`suggest_move` isn't available everywhere**: games without a built-in bot return `move: null`. It also returns `null` when the bot fails, which doesn't mean there is no legal move.
 - **Some move guides are rough**: for Werewolf, Three Kingdoms, Checkers, Chinese Chess and a few others, `get_rules` only gives the general shape. Trust the state from `get_state` and the result of `suggest_move` for the exact fields.
 - **Draw & Guess**: `get_canvas` returns an image, so clients without image results can't see the canvas. `draw` takes at most 60 strokes per call and draws outlines only (no fill, no `transform`); complex SVG is approximated with polylines.

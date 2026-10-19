@@ -240,6 +240,9 @@ module.exports = {
   'sb_you_are_out': 'You are out',
   'sb_invalid_direction': 'Invalid direction',
   'sb_cannot_reverse': 'Cannot reverse immediately',
+  // Kitchen Crew (kc_)
+  'kc_bad_move': 'Invalid action',
+  'kc_no_chef': 'Your chef was not found',
 
   // Suika Battle (sk_)
   'sk_you_are_out': 'You are out',

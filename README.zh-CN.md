@@ -1,6 +1,6 @@
 # GameNest
 
-> 没网也能和朋友一起玩的 34 款局域网游戏：棋牌、麻将、聚会、益智、实时对战。一台手机或电脑开服（开热点就行），其他人扫码用浏览器加入，不用流量，不用装 App。
+> 没网也能和朋友一起玩的 35 款局域网游戏：棋牌、麻将、聚会、益智、实时对战。一台手机或电脑开服（开热点就行），其他人扫码用浏览器加入，不用流量，不用装 App。
 
 **[🚀 在线试玩](https://gamenest-4kww.onrender.com) — 无需安装，打开即玩。**
 
@@ -9,7 +9,7 @@
 [![Android APK](https://github.com/absswds/GameNest/actions/workflows/android-apk.yml/badge.svg)](https://github.com/absswds/GameNest/actions/workflows/android-apk.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-43853d.svg)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.x-lightgrey.svg)](https://expressjs.com/)
-[![Games](https://img.shields.io/badge/Games-34-blue.svg)](#game-catalog)
+[![Games](https://img.shields.io/badge/Games-35-blue.svg)](#game-catalog)
 [![No account](https://img.shields.io/badge/Account-Not_Required-green.svg)](#highlights)
 [![Offline](https://img.shields.io/badge/Network-LAN/Offline-orange.svg)](#highlights)
 [![Android](https://img.shields.io/badge/Host-Android_✓-brightgreen.svg)](#android-host)
@@ -28,7 +28,7 @@ GameNest 是一个轻量开源的局域网桌游房间，适合家庭娱乐、�
 
 - **断网也能玩**：飞机、高铁、露营、地下室都行。一台手机开热点或者连同一个 WiFi，全程不需要互联网。
 - **只要一台装了它的设备**：Android 手机、Windows 电脑（独立 exe）或任何能跑 Node.js 的机器都能当主机。其他人扫二维码或输房间号，用浏览器就能进，不用安装。
-- **34 款游戏**：棋盘、扑克、麻将、派对、推理、身份阵营、脑力竞速和实时对战都有，2 人到一大群人都能玩。
+- **35 款游戏**：棋盘、扑克、麻将、派对、推理、身份阵营、脑力竞速和实时对战都有，2 人到一大群人都能玩。
 - **人不够就加 AI**：大多数回合制游戏都有电脑玩家，一个人也能练手。
 - **掉线能回来**：断线或误退回大厅后，可以从大厅的返回卡片回到原座位继续。
 - **隐藏信息是真隐藏**：手牌、身份等私密信息只发给本人，旁边的人抓包也看不到。
@@ -94,7 +94,7 @@ http://<主机IP>:3000
 | 牌桌竞技 | 德州扑克、斗地主、达芬奇密码、魔力桥、骗子酒馆、大老二、麻将（四川/广东）、红心大战、三国身份局 |
 | 派对同乐 | 大富翁、飞行棋、你画我猜、UNO、数字炸弹、抽鬼牌、爆炸猫、真心话大冒险、狼人杀 |
 | 脑力闯关 | 羊了个羊、24点、数独、2048、扫雷竞速 |
-| 实时对战 | 合成大西瓜、贪吃蛇大乱斗 |
+| 实时对战 | 厨房小分队（合作做菜）、合成大西瓜、贪吃蛇大乱斗 |
 
 ## 常用命令
 

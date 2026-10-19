@@ -240,6 +240,9 @@ module.exports = {
   'sb_you_are_out': '你已出局',
   'sb_invalid_direction': '方向无效',
   'sb_cannot_reverse': '不能立刻反向',
+  // Kitchen Crew (kc_)
+  'kc_bad_move': '无效操作',
+  'kc_no_chef': '找不到你的厨师',
 
   // Suika Battle (sk_)
   'sk_you_are_out': '你已出局',

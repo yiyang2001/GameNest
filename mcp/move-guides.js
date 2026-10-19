@@ -16,6 +16,7 @@ module.exports = {
   sudoku: 'Move {type:"fill",row,col,val} (0-based, val 1-9). Race: everyone solves the same puzzle on their own board; a wrong fill costs a heart. {type:"hint"} spends one of 3 hints.',
   minesweeper: 'Move {action:"reveal"|"flag",row,col}. Ex: {"action":"reveal","row":3,"col":3}.',
   "2048": 'Move {dir} one of "up","down","left","right" (check state for accepted values).',
+  kitchencrew: 'Realtime co-op. Browsers report positions with {type:"pos",x,y,fx,fy}; interact with {type:"grab"|"use",tx,ty} on a tile within reach; {type:"throw"} throws the held ingredient the way the chef faces. Not practical for an agent; add the built-in bot chefs instead.',
   snakebattle: 'Realtime. Move {direction} one of "up","down","left","right". Send occasionally; the server ticks.',
   suikabattle: 'Realtime canvas game; moves {type:"drop"} / {type:"merge",fruitType} / {type:"gameover"} are client-generated. Not practical for an agent.',
   sheeptile: 'Move {type:"pick",tileId} picks a free tile; powers: {type:"power_undo"}, {type:"power_shuffle"}, {type:"power_pop3"}.',

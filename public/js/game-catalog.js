@@ -238,6 +238,19 @@
       maxPlayers: 4,
       cover: '/assets/game-covers/flightchess-race.webp'
     },
+    kitchencrew: {
+      name: '厨房小分队',
+      icon: '🍳',
+      subtitle: '切菜煮汤，手忙脚乱一起出餐',
+      description: '1-4 人实时合作：备菜、下锅、装盘、上菜，赶在打烊前拿满三星。',
+      players: '1-4人',
+      duration: '约3分钟',
+      category: '派对同乐',
+      tags: ['合作', '实时', '手忙脚乱'],
+      featured: true,
+      supportsAI: true,
+      maxPlayers: 4,
+    },
     snakebattle: {
       name: '贪吃蛇大乱斗',
       icon: 'S',
@@ -465,6 +478,7 @@
     'sheeptile',
     'suikabattle',
     'drawguess',
+    'kitchencrew',
     'texas',
     'uno',
     'doudizhu',
