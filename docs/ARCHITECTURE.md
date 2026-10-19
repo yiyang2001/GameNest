@@ -65,12 +65,12 @@ Most card and role games use it (Texas Hold'em, Dou Dizhu, UNO, Mahjong, Werewol
 ## 回合与计时 / Turn Flow and Timers
 
 - **普通回合**：行动者是 `state.currentPlayer`。需要别人应答的游戏（响应者、开枪者）导出 `getCurrentActor` / `setCurrentActor`。
-- **实时游戏**导出 `realtime` 和 `tick`，服务器按间隔调用 `tick`。
+- **实时游戏**导出 `realtime` 和 `tick`，服务器按间隔调用 `tick` 并在每次 tick 后广播。实时游戏还可以导出 `silentMove(data)`：返回 true 的出招（例如厨房小分队每秒约 15 次的位置上报）只修改状态、不立即广播，随下一次 tick 一起发出。
 - **阶段制游戏**（狼人杀、三国杀）导出 `getPhaseDeadline`、`onTimeout` 和 `getPendingActors`；`server.js` 里通用的 `schedulePhaseGame` 负责它们的截止时间和电脑行动。
 - 少数老游戏在 `server.js` 里还有专门分支（海战布阵、24 点、斗地主出牌计时、麻将局末、骗子酒馆暂停）。
 
 - **Normal turns**: the actor is `state.currentPlayer`. Games where someone else must answer (a responder, a shooter) export `getCurrentActor` / `setCurrentActor`.
-- **Real-time games** export `realtime` and `tick`; the server calls `tick` on an interval.
+- **Real-time games** export `realtime` and `tick`; the server calls `tick` on an interval and broadcasts after each tick. A realtime game may also export `silentMove(data)`: moves it returns true for (e.g. Kitchen Crew's ~15/s position reports) are applied without an immediate broadcast and ride along with the next tick.
 - **Phase games** (Werewolf, Three Kingdoms) export `getPhaseDeadline`, `onTimeout` and `getPendingActors`; the generic `schedulePhaseGame` in `server.js` runs their deadlines and bot actions.
 - A few older games still have their own branches in `server.js` (Battleship placement, 24 Game, Dou Dizhu turn timer, Mahjong round end, Liar's Bar pause).
 
