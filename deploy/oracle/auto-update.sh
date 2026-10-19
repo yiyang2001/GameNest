@@ -36,7 +36,7 @@ healthy() {
   local port i
   port=$(app_port)
   for i in $(seq 1 30); do
-    if curl -fsS -o /dev/null "http://127.0.0.1:$port/" && curl -fsS -o /dev/null "http://127.0.0.1:$port/api/room-exists/healthcheck"; then
+    if curl -fs -o /dev/null "http://127.0.0.1:$port/" && curl -fs -o /dev/null "http://127.0.0.1:$port/api/room-exists/healthcheck"; then
       return 0
     fi
     sleep 1
@@ -44,15 +44,20 @@ healthy() {
   return 1
 }
 
-# Runs the full test suite on a commit in a throwaway copy; the running app is not touched
+# Runs the full test suite on a commit in a throwaway copy; the running app is not touched.
+# Returns 0 = passed, 1 = tests failed, 2 = could not prepare the copy (network, disk...: retried next run)
 test_commit() {
   local sha=$1 tmp rc=0
   tmp=$(mktemp -d /tmp/gamenest-test.XXXXXX)
   chown "$APP_USER:$APP_USER" "$tmp"
-  as_app git clone -q --no-checkout "$APP_DIR" "$tmp/app"
-  as_app git -C "$tmp/app" checkout -q "$sha"
-  if ! as_app npm --prefix "$tmp/app" ci --no-audit --no-fund >"$STATE_DIR/test.log" 2>&1; then
-    rc=1
+  : >"$STATE_DIR/test.log"
+  # The app checkout is a shallow clone: a plain clone of it only carries its local branch, so the new
+  # commit is fetched explicitly from its remote-tracking ref
+  if ! { as_app git clone -q --no-checkout "$APP_DIR" "$tmp/app" &&
+         as_app git -C "$tmp/app" fetch -q origin "+refs/remotes/origin/$BRANCH:refs/heads/under-test" &&
+         as_app git -C "$tmp/app" checkout -q "$sha" &&
+         as_app npm --prefix "$tmp/app" ci --no-audit --no-fund; } >>"$STATE_DIR/test.log" 2>&1; then
+    rc=2
   elif ! (cd "$tmp/app" && as_app npm test) >>"$STATE_DIR/test.log" 2>&1; then
     rc=1
   fi
@@ -103,7 +108,14 @@ check_once() {
 
   if [ "$(cat "$STATE_DIR/tested" 2>/dev/null || true)" != "$new" ]; then
     log "testing ${new:0:7}: $(app_git log -1 --format=%s "$new")"
-    if ! test_commit "$new"; then
+    local trc=0
+    test_commit "$new" || trc=$?
+    if [ "$trc" -eq 2 ]; then
+      log "could not prepare a test copy of ${new:0:7}; will retry next run (details: $STATE_DIR/test.log)"
+      tail -5 "$STATE_DIR/test.log" || true
+      return 1
+    fi
+    if [ "$trc" -ne 0 ]; then
       echo "$new" >"$STATE_DIR/failed"
       log "tests FAILED on ${new:0:7}; not deploying it (details: $STATE_DIR/test.log)"
       grep -E "^(not ok|✖)|# fail|ℹ fail" "$STATE_DIR/test.log" | head -10 || true
