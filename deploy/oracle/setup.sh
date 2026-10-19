@@ -7,7 +7,7 @@
 # Works on a VM that already runs other sites: an existing Caddyfile is kept (GameNest is added through
 # an import), and the script stops before changing anything if its ports are taken by other programs.
 # Another app port: GAMENEST_PORT=3100 bash setup.sh play.example.com
-set -euo pipefail
+set -Eeuo pipefail
 
 DOMAIN="${1:?usage: bash setup.sh <domain> [git-repo-url]}"
 REPO="${2:-https://github.com/yiyang2001/GameNest.git}"
@@ -20,8 +20,11 @@ die() { printf '\n\033[1;31mERROR: %s\033[0m\n' "$*" >&2; exit 1; }
 # sudo drops exported variables, so they go on the command line. NEEDRESTART_MODE=a: Ubuntu 22.04's
 # needrestart would otherwise stop and ask which services to restart.
 apt_get() { sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get "$@"; }
-# Names of the processes listening on a TCP port (empty when free)
-port_owner() { sudo ss -ltnpH "sport = :$1" | grep -o 'users:(("[^"]*"' | cut -d'"' -f2 | sort -u | tr '\n' ' '; }
+# Names of the processes listening on a TCP port (empty when free). grep finds nothing on a free port and
+# exits 1, which pipefail would turn into a silent exit of the whole script: hence the || true.
+port_owner() { { sudo ss -ltnpH "sport = :$1" | grep -o 'users:(("[^"]*"' | cut -d'"' -f2 | sort -u | tr '\n' ' '; } || true; }
+# Any other unexpected failure says where it happened instead of ending silently
+trap 'printf "\n\033[1;31mERROR: setup.sh stopped at line %s: %s\033[0m\n" "$LINENO" "$BASH_COMMAND" >&2' ERR
 
 log "Checking ports before changing anything"
 owner=$(port_owner "$PORT")
