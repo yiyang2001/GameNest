@@ -71,6 +71,10 @@ bash setup.sh play.sitehustle.my
 - 用 Caddy 提供 HTTPS，证书自动签发、自动续期；
 - 在 VM 防火墙上打开 80 / 443 端口。
 
+**VM 上已经有别的服务也可以装：**
+- 脚本开始前先检查端口。3000 被占用，或者 80/443 被 Caddy 以外的程序（比如 Nginx）占用，就直接停下，什么都不改。3000 被占用时可以换一个端口：`GAMENEST_PORT=3100 bash setup.sh play.sitehustle.my`。
+- 已有的 Caddy 配置会保留：GameNest 写在单独的 `/etc/caddy/gamenest.caddy`，主配置里只加一行 `import`。原来的 Caddyfile 会备份成 `Caddyfile.bak.<时间>`；新配置检查不通过就自动恢复原样。
+
 完成后打开 `https://play.sitehustle.my`。DNS 生效后的第一次访问，Caddy 会签证书，可能要等几秒。
 
 ### 日常操作
