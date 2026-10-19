@@ -155,11 +155,16 @@ else
   echo "GameNest did not answer; see: sudo journalctl -u gamenest -n 50" >&2
   exit 1
 fi
+
+if [ "${GAMENEST_AUTO_UPDATE:-1}" = "1" ]; then
+  log "Automatic updates from master (GAMENEST_AUTO_UPDATE=0 to skip)"
+  sudo bash "$APP_DIR/deploy/oracle/auto-update.sh" --install
+fi
 cat <<EOF
 
 Done. Remaining steps outside this VM (see deploy/README.md):
   1. Oracle console: allow TCP 80 and 443 in the VCN security list (or network security group).
   2. DNS: point $DOMAIN (A record) at this VM's public IP.
 Then open https://$DOMAIN — Caddy gets the certificate on the first visit after DNS resolves.
-Logs: sudo journalctl -u gamenest -f     Update later: bash $APP_DIR/deploy/oracle/update.sh
+Logs: sudo journalctl -u gamenest -f     Updates: automatic from master (sudo journalctl -u gamenest-update -f)
 EOF
