@@ -1,0 +1,24 @@
+# Render.com 部署配置：东南亚（新加坡）区域，步骤见 deploy/README.md
+# 文档: https://render.com/docs/blueprint-spec
+# 建 Blueprint 时把 Blueprint Path 填成 deploy/render-sea.yaml（根目录的 render.yaml 是另一份配置，不受影响）
+#
+# 房间存在内存里：只能跑一个实例。免费版 15 分钟没有流量会休眠，下次打开约 1 分钟才能唤醒，
+# 休眠时所有房间清空（只会在没人玩的时候发生）。
+
+services:
+  - type: web
+    name: gamenest-sea
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: NODE_VERSION
+        value: "22"
+    autoDeploy: true
