@@ -20,7 +20,9 @@ STATE_DIR=/var/lib/gamenest-update
 MAX_WAIT_H="${GAMENEST_MAX_WAIT_H:-6}"
 
 log() { echo "[gamenest-update] $*"; }
-as_app() { sudo -u "$APP_USER" env HOME="$APP_DIR" "$@"; }
+# setpriv instead of sudo: sudo logs a PAM session open/close for every call, which every 3 minutes
+# floods auth.log and the journal with thousands of lines a day
+as_app() { setpriv --reuid="$APP_USER" --regid="$APP_USER" --init-groups env HOME="$APP_DIR" "$@"; }
 app_git() { as_app git -C "$APP_DIR" "$@"; }
 
 app_port() {
