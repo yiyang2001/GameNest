@@ -77,9 +77,23 @@ bash setup.sh play.sitehustle.my
 
 完成后打开 `https://play.sitehustle.my`。DNS 生效后的第一次访问，Caddy 会签证书，可能要等几秒。
 
+### 自动更新
+`setup.sh` 会装一个定时器：VM 每 3 分钟检查一次 `master`，有新提交就自动更新。步骤：
+
+1. **先跑测试**：在临时目录对新提交跑完整的 `npm test`，不影响正在运行的服务。不通过就不部署，在日志里记录原因；这个提交不再重试，等 `master` 下一次更新。
+2. **等没人在玩**：重启会清空所有房间，所以只要还有人连着就先不更新，每 3 分钟再看一次。为了不被一直开着的网页卡住，最多等 6 小时，超过就照常更新（`GAMENEST_MAX_WAIT_H` 可改）。
+3. **更新后检查**：重启后确认服务能正常响应；没响应就自动回滚到上一个版本。
+
+```bash
+sudo journalctl -u gamenest-update -f           # 看自动更新在做什么
+systemctl list-timers gamenest-update.timer     # 下一次检查的时间
+sudo bash /opt/gamenest/deploy/oracle/auto-update.sh   # 立刻检查一次
+sudo systemctl disable --now gamenest-update.timer     # 关掉自动更新
+```
+
 ### 日常操作
 ```bash
-bash /opt/gamenest/deploy/oracle/update.sh   # 拉最新代码并重启（会清空房间）
+bash /opt/gamenest/deploy/oracle/update.sh   # 手动拉最新代码并重启（不跑测试、不等玩家，会清空房间）
 sudo journalctl -u gamenest -f               # 看日志
 sudo systemctl restart gamenest              # 重启
 ```
