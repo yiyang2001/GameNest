@@ -519,3 +519,14 @@ test('kitchencrew: bots tidy up food lying on the floor', () => {
   }
   assert.equal(s.floor['6,5'], undefined);
 });
+
+test('kitchencrew: actions echo their number so clients can drop predictions', () => {
+  const s = go(start(1, { level: '1' }));
+  grab(s, 0, find(s, 't')[0]);
+  assert.equal(s.chefs[0].ack, undefined, 'no number, no echo');
+  standAt(s, 0, 3, 0);
+  game.handleMove({ type: 'grab', tx: 3, ty: 0, seq: 7 }, s, 0);
+  assert.equal(s.chefs[0].ack, 7);
+  game.handleMove({ type: 'throw', seq: 8 }, s, 0);
+  assert.equal(s.chefs[0].ack, 8, 'echoed even when nothing happens (hands are empty)');
+});

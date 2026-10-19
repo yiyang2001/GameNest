@@ -729,23 +729,85 @@
   function act(kind) {
     var s = R.state, me = R.local;
     if (!s || !me || s.phase !== 'playing' || isPaused()) return;
+    var msg = { x: round3(me.x), y: round3(me.y), fx: round3(me.fx), fy: round3(me.fy) }, pred = null;
     // Use while holding an ingredient throws it the way you face.
     if (kind === 'use' && canThrow()) {
-      pressFlash(kind);
-      R.lastSent = { x: me.x, y: me.y, fx: me.fx, fy: me.fy };
-      R.lastSendAt = nowMs();
-      window.makeGameMove({ type: 'throw', x: round3(me.x), y: round3(me.y), fx: round3(me.fx), fy: round3(me.fy) });
-      vibrate(12);
-      return;
+      msg.type = 'throw';
+      pred = { at: nowMs(), x: me.x, y: me.y, fx: me.fx, fy: me.fy, fn: predictThrow };
+    } else {
+      var tgt = findTarget();
+      if (!tgt) { pressFlash(kind); return; }
+      msg.type = kind; msg.tx = tgt.x; msg.ty = tgt.y;
+      if (kind === 'grab') {
+        if (grabAction(tgt)) SFX.pop();
+        pred = { at: nowMs(), tx: tgt.x, ty: tgt.y, fn: predictGrab };
+      }
     }
-    var tgt = findTarget();
     pressFlash(kind);
-    if (!tgt) return;
+    msg.seq = ++R.seq;
     R.lastSent = { x: me.x, y: me.y, fx: me.fx, fy: me.fy };
     R.lastSendAt = nowMs();
-    window.makeGameMove({ type: kind, tx: tgt.x, ty: tgt.y, x: round3(me.x), y: round3(me.y), fx: round3(me.fx), fy: round3(me.fy) });
-    if (kind === 'grab' && grabAction(tgt)) SFX.pop();
+    window.makeGameMove(msg);
+    // Show the result now instead of after a round trip (slow over phone Wi-Fi / tunnels); the
+    // server's state takes over once it echoes this action's number (see applyPredictions).
+    if (pred) { pred.seq = msg.seq; R.preds.push(pred); pred.fn(R.state, R.me, pred); }
     vibrate(12);
+  }
+
+  // ---- local prediction of grab / drop / throw ----
+  var PREDICT_MS = 1000;
+  function applyPredictions(s) {
+    var mine = s.chefs && s.chefs[R.me], ack = mine && mine.ack != null ? mine.ack : -1, t = nowMs();
+    R.preds = R.preds.filter(function (p) { return p.seq > ack && t - p.at < PREDICT_MS; });
+    R.preds.forEach(function (p) { p.fn(s, R.me, p); });
+  }
+  // Mirrors the simple, certain cases of the server's interact(); merging items and serving wait for it.
+  function predictGrab(s, i, p) {
+    var c = s.chefs && s.chefs[i];
+    if (!c) return;
+    var k = p.tx + ',' + p.ty, ch = tileAt(s, p.tx, p.ty), h = c.h, item = s.items[k], st = s.stations && s.stations[k];
+    if (walkable(ch)) { if (!h && s.floor && s.floor[k]) { c.h = s.floor[k]; delete s.floor[k]; } return; }
+    if (ch === 'P') {
+      if (!h && st && st.n > 0) { st.n--; c.h = { k: 'plate', parts: [] }; }
+      else if (h && h.k === 'plate' && !h.parts.length && st) { st.n++; c.h = null; }
+      return;
+    }
+    if (ch === 'R') {
+      if (!h && st && st.n > 0) { c.h = { k: 'dirty', n: st.n }; st.n = 0; }
+      else if (h && h.k === 'dirty' && st) { st.n += h.n; c.h = null; }
+      return;
+    }
+    if (ch === 'K') { if (h && h.k === 'dirty' && st) { st.n += h.n; c.h = null; } return; }
+    if (ch === 'T') {
+      if (!h) return;
+      if (isIngredient(h)) c.h = null;
+      else if (h.k === 'plate') h.parts = [];
+      else if (h.k === 'pot' || h.k === 'pan') { h.parts = []; h.p = 0; h.b = false; }
+      return;
+    }
+    if (!(ch === 'C' || ch === 'B' || ch === 'S' || ch === 'F' || CRATES[ch])) return;
+    if (!h) {
+      if (item) { c.h = item; delete s.items[k]; }
+      else if (CRATES[ch]) c.h = { k: CRATES[ch], s: 'raw' };
+      return;
+    }
+    if (item || (CRATES[ch] && h.k === 'plate')) return;
+    var fits = ch === 'S' || ch === 'F' ? h.k === 'pot' || h.k === 'pan' : ch === 'B' ? isIngredient(h) : true;
+    if (fits) { s.items[k] = h; c.h = null; }
+  }
+  function predictThrow(s, i, p) {
+    var c = s.chefs && s.chefs[i];
+    if (!c || !isIngredient(c.h)) return;
+    var l = Math.hypot(p.fx, p.fy) || 1, f = { item: c.h, x: p.x, y: p.y, dx: p.fx / l, dy: p.fy / l, d: 0 };
+    // carry it as far as it has flown since the press, stopping at the first counter
+    var want = Math.min(THROW_RANGE, THROW_SPEED * (nowMs() - p.at) / 1000);
+    while (f.d < want) {
+      var st = Math.min(.1, want - f.d), nx = f.x + f.dx * st, ny = f.y + f.dy * st;
+      if (!walkable(tileAt(s, Math.floor(nx), Math.floor(ny)))) break;
+      f.x = nx; f.y = ny; f.d += st;
+    }
+    c.h = null;
+    s.flying = (s.flying || []).concat([f]);
   }
 
   function dash() {
@@ -1419,7 +1481,7 @@
         keys: {}, joy: { active: false, x: 0, y: 0 },
         snaps: [], drawn: {}, particles: [], orderBorn: {}, fxSeen: 0, skipFx: true,
         scoreShown: 0, tile: 0, dpr: 1, local: null, lastFix: null, lastTick: -1,
-        lastSendAt: 0, lastSent: null, banner: null, recvAt: nowMs(), touchSeen: false,
+        lastSendAt: 0, lastSent: null, banner: null, recvAt: nowMs(), touchSeen: false, seq: 0, preds: [],
       };
       R.ctx = R.canvas.getContext('2d');
       R.grabSpan = root.querySelector('.kc-grab span');
@@ -1472,6 +1534,13 @@
       R.state = state;
       R.me = playerIndex;
       R.recvAt = nowMs();
+      if (first || restarted) {
+        R.preds = [];
+        // after a reload / rejoin, keep numbering above what the server last acknowledged
+        var me0 = state.chefs && state.chefs[playerIndex];
+        if (me0 && me0.ack != null) R.seq = Math.max(R.seq, me0.ack);
+      }
+      applyPredictions(state);
       R.snaps.push({ at: R.recvAt, chefs: state.chefs.map(function (c) { return { x: c.x, y: c.y, fx: c.fx, fy: c.fy }; }) });
       if (R.snaps.length > 12) R.snaps.shift();
       var mine = state.chefs[playerIndex];

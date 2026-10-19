@@ -636,6 +636,9 @@ exports.handleMove = (data, state, playerIndex) => {
   }
   if (state.paused !== null && (type === 'pos' || type === 'grab' || type === 'use' || type === 'input' || type === 'throw')) return null;
 
+  // Echo the client's action number so it knows when to drop its local prediction.
+  if ((type === 'grab' || type === 'use' || type === 'throw') && Number.isInteger(data.seq)) chef.ack = data.seq;
+
   // Throw the held ingredient the way the chef faces; the server flies it (see stepFlight).
   if (type === 'throw') {
     if (data.x !== undefined) acceptPosition(state, chef, data);
