@@ -24,7 +24,7 @@ module.exports = {
   monopoly: 'Move {type:"roll"} | {type:"buy"} | {type:"skip_buy"} | {type:"build",spaceIndex?} | {type:"end_turn"}. Follow state phase.',
   uno: 'Play {cardId,chosenColor?} (chosenColor for wild: "red"|"yellow"|"green"|"blue"). Draw: {} with no cardId (see state). Call uno: {uno:true} with the play. Challenge +4: {challengeResponse:true|false}.',
   oldmaid: 'Move {cardIndex} index of the card to draw from the previous player\'s hand.',
-  bigtwo: 'Move {cards:[cardId,...]} to play; {cards:[]} to pass. Card ids from your hand in state.',
+  bigtwo: 'Move {cards:[cardId,...]} to play (1, 2, 3 or 5 cards); {cards:[]} or {pass:true} to pass. Card ids from your hand in state.',
   doudizhu: 'Bid: {call:true} / {pass:true}; rob: {rob:true} / {passRob:true}; play: {cards:[ids]} ; pass: {pass:true}; end: {action:"continue_vote",vote:"yes"|"no"} or {action:"next_round"}. Follow state.phase.',
   hearts: 'Pass phase: {cards:[3 ids]}; play: {card:cardId}. Follow state.phase.',
   texas: 'Move {action:"fold"|"check"|"call"|"raise"|"allin", amount?}. Ex: {"action":"raise","amount":40}.',
