@@ -1477,7 +1477,14 @@ wss.on('connection', (ws) => {
       const playerInfo = currentRoom.players.get(ws);
       if (!playerInfo) return;
 
-      const err = gameMod.handleMove(data, currentRoom.state, playerInfo.index);
+      // A malformed payload must not take the whole server (every room) down with it.
+      let err;
+      try {
+        err = gameMod.handleMove(data, currentRoom.state, playerInfo.index);
+      } catch (e) {
+        console.error('[game=' + currentRoom.game + ' actor=' + playerInfo.index + ' room=' + currentRoom._roomId + '] Move exception:', e.message);
+        err = 'g_bad_move';
+      }
       if (err) {
         ws.send(JSON.stringify({ type: 'error', message: serverT(currentRoom, err), code: err }));
         return;
@@ -1552,6 +1559,15 @@ wss.on('connection', (ws) => {
           winner: currentRoom.state.winner,
         };
       }
+      // 大老二：累计分跨局保留（人数变了就重新算）
+      var prevBT = null;
+      if (currentRoom.state && currentRoom.game === 'bigtwo' && Array.isArray(currentRoom.state.cumulativeScore) &&
+          currentRoom.state.cumulativeScore.length === totalPlayers) {
+        prevBT = {
+          cumulativeScore: currentRoom.state.cumulativeScore,
+          roundNumber: (currentRoom.state.roundNumber || 1) + (currentRoom.state.winner != null ? 1 : 0),
+        };
+      }
       // 多局比赛：上一局已分出结果、比赛还没结束时交换座位，轮流先手
       if (currentRoom.match && !currentRoom.match.over && currentRoom.state && currentRoom.state.winner != null) {
         swapMatchSeats(currentRoom);
@@ -1577,6 +1593,10 @@ wss.on('connection', (ws) => {
         }
         currentRoom.state.dealerIndex = nextDealer;
         currentRoom.state.roundNumber = (prevMJ.roundNumber || 1) + 1;
+      }
+      if (prevBT) {
+        currentRoom.state.cumulativeScore = prevBT.cumulativeScore;
+        currentRoom.state.roundNumber = prevBT.roundNumber;
       }
 
       if (gameMod && gameMod.initGame) {
