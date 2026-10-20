@@ -1,97 +1,40 @@
 // bots/bigtwo.js
 exports.name = 'bigtwo';
 
-const { RANKS, rankVal, rankGroups } = require('./lib/cards');
+const game = require('../games/bigtwo');
 const { botName } = require('./lib/bot-name');
 
-function suitVal(suit) {
-  const order = { s: 3, h: 2, c: 1, d: 0 };
-  return order[suit] || 0;
+// All combinations of k cards from list.
+function combos(list, k) {
+  const out = [];
+  const pick = (start, acc) => {
+    if (acc.length === k) { out.push(acc.slice()); return; }
+    for (let i = start; i <= list.length - (k - acc.length); i++) {
+      acc.push(list[i]); pick(i + 1, acc); acc.pop();
+    }
+  };
+  pick(0, []);
+  return out;
 }
 
-// Find lowest single in hand (by rank, then suit)
-function findLowestSingle(hand) {
-  const sorted = [...hand].sort((a,b) => {
-    const rv = rankVal(a.rank) - rankVal(b.rank);
-    if (rv !== 0) return rv;
-    return suitVal(a.suit) - suitVal(b.suit);
-  });
-  return sorted[0];
+// Every legal play for this player right now, as { cards, play }.
+function legalPlays(state, playerIndex) {
+  const hand = state.hands[playerIndex];
+  const sizes = state.lastPlay && state.lastPlayPlayer !== playerIndex
+    ? [state.lastPlay.cards.length] : [1, 2, 3, 5];
+  const out = [];
+  for (const k of sizes) {
+    for (const cards of combos(hand, k)) {
+      const r = game.checkPlay(state, playerIndex, cards);
+      if (!r.error) out.push({ cards, play: r.play });
+    }
+  }
+  return out;
 }
 
-// Find a playable combination that beats lastPlay
-function findBeat(hand, lastPlay) {
-  if (!lastPlay || !lastPlay.play) return null;
-  const tp = lastPlay.play;
-  const groups = rankGroups(hand);
-
-  if (tp.type === 'single') {
-    for (const c of hand) {
-      if (rankVal(c.rank) > tp.rank || (rankVal(c.rank) === tp.rank && suitVal(c.suit) > (tp.suit || 0))) {
-        return [c];
-      }
-    }
-    return null;
-  }
-
-  if (tp.type === 'pair') {
-    for (const [rank, cards] of groups) {
-      if (cards.length >= 2) {
-        if (rankVal(rank) > tp.rank) return cards.slice(0, 2);
-        if (rankVal(rank) === tp.rank) {
-          // Check if any pair of this rank beats previous suit
-          const best = cards.sort((a,b) => suitVal(b.suit) - suitVal(a.suit))[1];
-          if (suitVal(best.suit) > (tp.suit || 0)) return cards.slice(0, 2);
-        }
-      }
-    }
-    return null;
-  }
-
-  if (tp.type === 'triple') {
-    for (const [rank, cards] of groups) {
-      if (cards.length >= 3 && rankVal(rank) > tp.rank) return cards.slice(0, 3);
-    }
-    return null;
-  }
-
-  if (tp.type === 'straight') {
-    const len = tp.length;
-    if (hand.length < len) return null;
-    // Try to find any straight of same length with higher rank
-    const sortedHand = [...hand].sort((a,b) => rankVal(a.rank) - rankVal(b.rank));
-    const rankSet = new Set(sortedHand.map(c => c.rank));
-    const uniqueByRank = [];
-    for (const c of sortedHand) {
-      if (uniqueByRank.length === 0 || uniqueByRank[uniqueByRank.length-1].rank !== c.rank) {
-        uniqueByRank.push(c);
-      }
-    }
-    for (let i = 0; i <= uniqueByRank.length - len; i++) {
-      let consecutive = true;
-      for (let j = 1; j < len; j++) {
-        if (rankVal(uniqueByRank[i + j].rank) - rankVal(uniqueByRank[i + j - 1].rank) !== 1) {
-          consecutive = false; break;
-        }
-      }
-      if (consecutive) {
-        const startRank = rankVal(uniqueByRank[i].rank);
-        if (startRank > tp.rank) {
-          // Gather one card per rank
-          const result = [];
-          for (let j = 0; j < len; j++) {
-            result.push(sortedHand.find(c => c.rank === RANKS[startRank + j]));
-          }
-          return result;
-        }
-      }
-    }
-    return null;
-  }
-
-  // For flush, full house, four-one, straight_flush — simpler types are harder to beat
-  // Try low singles against complex plays (pragmatic AI)
-  return null;
+// Weakest first: five-card kind, then rank, then suit.
+function strength(play) {
+  return (play.kind || 0) * 1000 + play.rank * 10 + (play.suit || 0);
 }
 
 exports.createBot = function(playerIndex) {
@@ -101,23 +44,24 @@ exports.createBot = function(playerIndex) {
     getMove: function(state) {
       const hand = state.hands[playerIndex];
       if (!hand || hand.length === 0) return { cards: [] };
+      const plays = legalPlays(state, playerIndex);
+      if (plays.length === 0) return { cards: [] };
 
       const isFreePlay = !state.lastPlay || state.lastPlayPlayer === playerIndex;
-
+      let pick;
       if (isFreePlay) {
-        // Lead with lowest single
-        const lowest = findLowestSingle(hand);
-        return { cards: [lowest.id] };
+        // Lead with the biggest group that sheds the lowest card; otherwise the weakest legal play.
+        const lowest = hand.reduce((a, b) => (game.cardVal(b) < game.cardVal(a) ? b : a));
+        const withLowest = plays.filter(p => p.cards.indexOf(lowest) >= 0);
+        const pool = withLowest.length ? withLowest : plays;
+        pool.sort((a, b) => (b.cards.length - a.cards.length) || (strength(a.play) - strength(b.play)));
+        pick = pool[0];
+      } else {
+        // Beat with the weakest play that does the job
+        plays.sort((a, b) => strength(a.play) - strength(b.play));
+        pick = plays[0];
       }
-
-      // Try to beat
-      const beat = findBeat(hand, state.lastPlay);
-      if (beat) {
-        return { cards: beat.map(c => c.id) };
-      }
-
-      // Pass
-      return { cards: [] };
+      return { cards: pick.cards.map(c => c.id) };
     }
   };
 };
